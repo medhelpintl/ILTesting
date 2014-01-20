@@ -40,7 +40,7 @@
 	[ILCannedURLProtocol setSupportedMethods:nil];
 	[ILCannedURLProtocol setSupportedSchemes:nil];
 	
-	STAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
+	XTAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
 }
 
 - (void)testCanInitWithGETHTTPRequestWithSupportedSchemesAndMethodsEmpty {
@@ -51,7 +51,7 @@
 	[ILCannedURLProtocol setSupportedMethods:[NSArray array]];
 	[ILCannedURLProtocol setSupportedSchemes:[NSArray array]];
 	
-	STAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
+	XTAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
 }
 
 - (void)testCanInitWithGETHTTPRequestWithSupportedHTTPSchemesAndGETMethods{
@@ -62,7 +62,7 @@
 	[ILCannedURLProtocol setSupportedMethods:[NSArray arrayWithObject:@"GET"]];
 	[ILCannedURLProtocol setSupportedSchemes:[NSArray arrayWithObject:@"http"]];
 	
-	STAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
+	XTAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
 }
 
 - (void)testCanInitWithPOSTHTTPSRequestWithSupportedHTTPSSchemesAndPOSTMethods{
@@ -73,7 +73,7 @@
 	[ILCannedURLProtocol setSupportedMethods:[NSArray arrayWithObject:@"POST"]];
 	[ILCannedURLProtocol setSupportedSchemes:[NSArray arrayWithObject:@"https"]];
 	
-	STAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
+	XTAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
 }
 
 - (void)testCanInitWithPOSTHTTPRequestWithSupportedHTTPSchemesAndGETMethods{
@@ -84,7 +84,7 @@
 	[ILCannedURLProtocol setSupportedMethods:[NSArray arrayWithObject:@"GET"]];
 	[ILCannedURLProtocol setSupportedSchemes:[NSArray arrayWithObject:@"http"]];
 	
-	STAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
+	XTAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
 }
 
 - (void)testCanInitWithGETHTTPRequestWithSupportedHTTPSSchemesAndGETMethods{
@@ -95,7 +95,7 @@
 	[ILCannedURLProtocol setSupportedMethods:[NSArray arrayWithObject:@"GET"]];
 	[ILCannedURLProtocol setSupportedSchemes:[NSArray arrayWithObject:@"https"]];
 	
-	STAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
+	XTAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol does not support a GET HTTP request");
 }
 
 - (void)testCanInitWithRequestWithSupportedBaseURL {
@@ -105,8 +105,8 @@
 	
 	[ILCannedURLProtocol setSupportedBaseURL:[NSURL URLWithString:@"http://example.com"]];
 	
-	STAssertTrue([ILCannedURLProtocol canInitWithRequest:goodRequest], @"ILCannedURLProtocol does not support a request with base url");
-	STAssertFalse([ILCannedURLProtocol canInitWithRequest:badRequest], @"ILCannedURLProtocol does not support a request with base url");
+	XTAssertTrue([ILCannedURLProtocol canInitWithRequest:goodRequest], @"ILCannedURLProtocol does not support a request with base url");
+	XTAssertFalse([ILCannedURLProtocol canInitWithRequest:badRequest], @"ILCannedURLProtocol does not support a request with base url");
 }
 
 
@@ -125,8 +125,8 @@
 	
 	id responseObject = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
 	
-	STAssertNotNil(responseObject, @"no canned response from http request");
-	STAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");	
+	XTAssertNotNil(responseObject, @"no canned response from http request");
+	XTAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");	
 }
 
 - (void)testStartLoadingWithDelegate {
@@ -138,9 +138,9 @@
 	NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
 	id responseObject = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
 	
-	STAssertNotNil(responseObject, @"no canned response from http request");
-	STAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");
-	STAssertTrue([[responseObject objectForKey:@"testName"] isEqual:@"testStartLoadingWithDelegate"], @"wrong canned response");
+	XTAssertNotNil(responseObject, @"no canned response from http request");
+	XTAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");
+	XTAssertTrue([[responseObject objectForKey:@"testName"] isEqual:@"testStartLoadingWithDelegate"], @"wrong canned response");
 }
 
 - (void)testAgainStartLoadingWithDelegate {
@@ -152,9 +152,9 @@
 	NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
 	id responseObject = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
 	
-	STAssertNotNil(responseObject, @"no canned response from http request");
-	STAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");
-	STAssertTrue([[responseObject objectForKey:@"testName"] isEqual:@"testAgainStartLoadingWithDelegate"], @"wrong canned response");
+	XTAssertNotNil(responseObject, @"no canned response from http request");
+	XTAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");
+	XTAssertTrue([[responseObject objectForKey:@"testName"] isEqual:@"testAgainStartLoadingWithDelegate"], @"wrong canned response");
 }
 
 - (void)testStartLoadingWithDelegatePlainJSONResponse {
@@ -166,9 +166,9 @@
 	NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
 	id responseObject = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
 	
-	STAssertNotNil(responseObject, @"no canned response from http request");
-	STAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");
-	STAssertTrue([[responseObject objectForKey:@"testName"] isEqual:@"testStartLoadingWithDelegatePlainJSONResponse"], @"wrong canned response");
+	XTAssertNotNil(responseObject, @"no canned response from http request");
+	XTAssertTrue([responseObject isKindOfClass:[NSDictionary class]], @"canned response has wrong format (not dictionary)");
+	XTAssertTrue([[responseObject objectForKey:@"testName"] isEqual:@"testStartLoadingWithDelegatePlainJSONResponse"], @"wrong canned response");
 }
 
 - (void)testCanInitWithRequestWithDelegateShouldInitWithRequest {
@@ -177,7 +177,7 @@
 	
 	[ILCannedURLProtocol setDelegate:self];
 	
-	STAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol delegate returned shouldInitWithRequest NO");
+	XTAssertTrue([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol delegate returned shouldInitWithRequest NO");
 }
 
 - (void)testCanInitWithRequestWithDelegateShouldInitWithRequestNO {
@@ -186,7 +186,7 @@
 	
 	[ILCannedURLProtocol setDelegate:self];
 	
-	STAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol delegate returned shouldInitWithRequest YES");
+	XTAssertFalse([ILCannedURLProtocol canInitWithRequest:request], @"ILCannedURLProtocol delegate returned shouldInitWithRequest YES");
 }
 
 
@@ -200,10 +200,10 @@
     NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:nil];
 	id responseObject = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
 	
-    STAssertNotNil(response, @"no canned response from http request");
-	STAssertNotNil(responseObject, @"no canned response object from http request");
-    STAssertEqualObjects(response.URL.absoluteString, @"http://redirected-response.com", @"response should have been redirected");
-    STAssertTrue([[responseObject objectForKey:@"REDIRECTED"] isEqual:@"YES"], @"wrong canned response");
+    XTAssertNotNil(response, @"no canned response from http request");
+	XTAssertNotNil(responseObject, @"no canned response object from http request");
+    XTAssertEqualObjects(response.URL.absoluteString, @"http://redirected-response.com", @"response should have been redirected");
+    XTAssertTrue([[responseObject objectForKey:@"REDIRECTED"] isEqual:@"YES"], @"wrong canned response");
 }
 
 

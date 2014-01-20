@@ -6,9 +6,9 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import "ILCannedURLProtocol.h"
 
-@interface ILCannedURLProtocolTests : SenTestCase <ILCannedURLProtocolDelegate>
+@interface ILCannedURLProtocolTests : XCTestCase <ILCannedURLProtocolDelegate>
 
 @end
