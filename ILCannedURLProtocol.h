@@ -27,6 +27,18 @@
 
 #import <Foundation/Foundation.h>
 
+@interface ILCannedResponse : NSObject
+@property (nonatomic, strong) NSData *data;
+@property (nonatomic, strong) NSDictionary *headers;
+@property (nonatomic, assign) NSInteger statusCode;
+@property (nonatomic, strong) NSError *error;
+
+@property (nonatomic, assign) CGFloat responseDelay;
+
+- (id) initWithResponseString:(NSString*)response;
+- (id) initWithResponse:(NSData*)response;
+@end
+
 @protocol ILCannedURLProtocolDelegate <NSObject>
 - (NSData*)responseDataForClient:(id<NSURLProtocolClient>)client request:(NSURLRequest*)request;
 @optional
@@ -40,16 +52,18 @@
 + (void)setStartLoadingBlock:(void(^)(NSURLRequest *request))block;
 + (void)setDelegate:(id<ILCannedURLProtocolDelegate>)delegate;
 
-+ (void)setCannedResponseData:(NSData*)data;
-+ (void)setCannedHeaders:(NSDictionary*)headers;
-+ (void)setCannedStatusCode:(NSInteger)statusCode;
-+ (void)setCannedError:(NSError*)error;
++ (void)setCannedResponse:(ILCannedResponse*) response;
+
+//+ (void)setCannedResponseData:(NSData*)data;
+//+ (void)setCannedHeaders:(NSDictionary*)headers;
+//+ (void)setCannedStatusCode:(NSInteger)statusCode;
+//+ (void)setCannedError:(NSError*)error;
 
 + (void)setSupportedMethods:(NSArray*)methods;
 + (void)setSupportedSchemes:(NSArray*)schemes;
 + (void)setSupportedBaseURL:(NSURL*)baseURL;
 
-+ (void)setResponseDelay:(CGFloat)responseDelay;
+//+ (void)setResponseDelay:(CGFloat)responseDelay;
 
 
 @end

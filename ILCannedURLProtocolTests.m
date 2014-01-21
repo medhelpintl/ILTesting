@@ -20,16 +20,16 @@
 
 	[ILCannedURLProtocol setDelegate:nil];
 	
-	[ILCannedURLProtocol setCannedStatusCode:200];
-	[ILCannedURLProtocol setCannedHeaders:nil];
-	[ILCannedURLProtocol setCannedResponseData:nil];
-	[ILCannedURLProtocol setCannedError:nil];
+//	[ILCannedURLProtocol setCannedStatusCode:200];
+//	[ILCannedURLProtocol setCannedHeaders:nil];
+//	[ILCannedURLProtocol setCannedResponseData:nil];
+//	[ILCannedURLProtocol setCannedError:nil];
 	
 	[ILCannedURLProtocol setSupportedMethods:nil];
 	[ILCannedURLProtocol setSupportedSchemes:nil];
 	[ILCannedURLProtocol setSupportedBaseURL:nil];
 	
-	[ILCannedURLProtocol setResponseDelay:0];
+//	[ILCannedURLProtocol setResponseDelay:0];
 }
 
 - (void)testCanInitWithGETHTTPRequestWithSupportedSchemesAndMethodsNotSet {
@@ -120,7 +120,8 @@
 				 nil];
 				 
 	NSData *requestData = [NSJSONSerialization dataWithJSONObject:requestObject options:0 error:nil];
-	[ILCannedURLProtocol setCannedResponseData:requestData];
+    [ILCannedURLProtocol setCannedResponse:[[ILCannedResponse alloc] initWithResponse:requestData]];
+//	[ILCannedURLProtocol setCannedResponseData:requestData];
 	NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
 	
 	id responseObject = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
@@ -206,6 +207,37 @@
     XCTAssertTrue([[responseObject objectForKey:@"REDIRECTED"] isEqual:@"YES"], @"wrong canned response");
 }
 
+- (void) testMultipleRequests {
+    
+    NSString *response1 = @"Hello1";
+    NSString *response2 = @"Hello2";
+    
+    [ILCannedURLProtocol setCannedResponse:[[ILCannedResponse alloc] initWithResponseString:response1]];
+    [ILCannedURLProtocol setCannedResponse:[[ILCannedResponse alloc] initWithResponseString:response2]];
+    
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://test.com"]];
+    
+    NSURLResponse *response = nil;
+    NSData *responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:nil];
+    NSString *responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+	
+    XCTAssertNotNil(response, @"no canned response from http request");
+	XCTAssertNotNil(responseData, @"no canned response object from http request");
+    XCTAssertEqualObjects(responseString, response1, @"Resposne should reflect the first set response");
+
+    
+    request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://test.com"]];
+    
+    response = nil;
+    responseData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:nil];
+    responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+	
+    XCTAssertNotNil(response, @"no canned response from http request");
+	XCTAssertNotNil(responseData, @"no canned response object from http request");
+    XCTAssertEqualObjects(responseString, response2, @"Resposne should reflect the second set response");
+
+    
+}
 
 
 #pragma mark - ILCannedURLProtocolDelegate

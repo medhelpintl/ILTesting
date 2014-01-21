@@ -27,6 +27,58 @@
 
 #import "ILCannedURLProtocol.h"
 
+@interface NSMutableArray (QueueAdditions)
+- (id) dequeue;
+- (void) enqueue:(id)obj;
+@end
+
+@implementation NSMutableArray (QueueAdditions)
+// Queues are first-in-first-out, so we remove objects from the head
+- (id) dequeue {
+    if ([self count] == 0) return nil; // to avoid raising exception (Quinn)
+    id headObject = [self objectAtIndex:0];
+    if (headObject != nil) {
+        [[headObject retain] autorelease]; // so it isn't dealloc'ed on remove
+        [self removeObjectAtIndex:0];
+    }
+    return headObject;
+}
+
+// Add to the tail of the queue (no one likes it when people cut in line!)
+- (void) enqueue:(id)anObject {
+    [self addObject:anObject];
+    //this method automatically adds to the end of the array
+}
+@end
+
+@implementation ILCannedResponse
+
+- (id) init
+{
+    if (self = [super init]) {
+        self.statusCode = 200;
+        self.responseDelay = 0;
+        self.error = nil;
+    }
+    return self;
+}
+
+- (id) initWithResponse:(NSData *)response
+{
+    if (self = [self init]) {
+        self.data = response;
+    }
+    return self;
+}
+
+- (id) initWithResponseString:(NSString *)response
+{
+    return [self initWithResponse:[response dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+@end
+
+
 // Undocumented initializer obtained by class-dump - don't use this in production code destined for the App Store
 @interface NSHTTPURLResponse(UndocumentedInitializer)
 - (id)initWithURL:(NSURL*)URL statusCode:(NSInteger)statusCode headerFields:(NSDictionary*)headerFields requestTime:(double)requestTime;
@@ -35,14 +87,15 @@
 static id<ILCannedURLProtocolDelegate> gILDelegate = nil;
 
 static void(^startLoadingBlock)(NSURLRequest *request) = nil;
-static NSData *gILCannedResponseData = nil;
-static NSDictionary *gILCannedHeaders = nil;
-static NSInteger gILCannedStatusCode = 200;
-static NSError *gILCannedError = nil;
+static NSMutableArray *gILCannedResponses = nil;
+//static NSData *gILCannedResponseData = nil;
+//static NSDictionary *gILCannedHeaders = nil;
+//static NSInteger gILCannedStatusCode = 200;
+//static NSError *gILCannedError = nil;
 static NSArray *gILSupportedMethods = nil;
 static NSArray *gILSupportedSchemes = nil;
 static NSURL *gILSupportedBaseURL = nil;
-static CGFloat gILResponseDelay = 0;
+//static CGFloat gILResponseDelay = 0;
 
 @implementation ILCannedURLProtocol
 
@@ -76,30 +129,43 @@ static CGFloat gILResponseDelay = 0;
 	gILDelegate = delegate;
 }
 
-+ (void)setCannedResponseData:(NSData*)data {
-	if(data != gILCannedResponseData) {
-		[gILCannedResponseData release];
-		gILCannedResponseData = [data retain];
-	}
++ (NSMutableArray*) cannedResponseQueue
+{
+    if (gILCannedResponses == nil) {
+        gILCannedResponses = [[[NSMutableArray alloc] init] retain];
+    }
+    return gILCannedResponses;
 }
 
-+ (void)setCannedHeaders:(NSDictionary*)headers {
-	if(headers != gILCannedHeaders) {
-		[gILCannedHeaders release];
-		gILCannedHeaders = [headers retain];
-	}
++ (void)setCannedResponse:(ILCannedResponse*) response
+{
+    [[ILCannedURLProtocol cannedResponseQueue] enqueue:response];
 }
 
-+ (void)setCannedStatusCode:(NSInteger)statusCode {
-	gILCannedStatusCode = statusCode;
-}
+//+ (void)setCannedResponseData:(NSData*)data {
+//	if(data != gILCannedResponseData) {
+//		[gILCannedResponseData release];
+//		gILCannedResponseData = [data retain];
+//	}
+//}
 
-+ (void)setCannedError:(NSError*)error {
-	if(error != gILCannedError) {
-		[gILCannedError release];
-		gILCannedError = [error retain];
-	}
-}
+//+ (void)setCannedHeaders:(NSDictionary*)headers {
+//	if(headers != gILCannedHeaders) {
+//		[gILCannedHeaders release];
+//		gILCannedHeaders = [headers retain];
+//	}
+//}
+
+//+ (void)setCannedStatusCode:(NSInteger)statusCode {
+//	gILCannedStatusCode = statusCode;
+//}
+
+//+ (void)setCannedError:(NSError*)error {
+//	if(error != gILCannedError) {
+//		[gILCannedError release];
+//		gILCannedError = [error retain];
+//	}
+//}
 
 - (NSCachedURLResponse *)cachedResponse {
 	return nil;
@@ -127,9 +193,9 @@ static CGFloat gILResponseDelay = 0;
 }
 
 
-+ (void)setResponseDelay:(CGFloat)responseDelay {
-	gILResponseDelay = responseDelay;
-}
+//+ (void)setResponseDelay:(CGFloat)responseDelay {
+//	gILResponseDelay = responseDelay;
+//}
 
 
 - (void)startLoading {
@@ -140,9 +206,18 @@ static CGFloat gILResponseDelay = 0;
         startLoadingBlock(request);
     }
     
-	NSInteger statusCode = gILCannedStatusCode;
-	NSDictionary *headers = gILCannedHeaders;
-	NSData *responseData = gILCannedResponseData;
+    ILCannedResponse *response = [[ILCannedURLProtocol cannedResponseQueue] dequeue];
+    if (!response) {
+        response = [[ILCannedResponse alloc] init];
+    }
+    
+	NSInteger statusCode = [response statusCode];//gILCannedStatusCode;
+	NSDictionary *headers = [response headers];//gILCannedHeaders;
+	NSData *responseData = [response data];//gILCannedResponseData;
+    NSError *error = [response error];
+    CGFloat responseDelay = [response responseDelay];
+    
+    NSLog(@"Servicing: %@", [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
     
     // Handle redirects
     if (gILDelegate && [gILDelegate respondsToSelector:@selector(redirectForClient:request:)]) {
@@ -159,8 +234,8 @@ static CGFloat gILResponseDelay = 0;
     }
 
 	
-	if (gILCannedError) {
-		[client URLProtocol:self didFailWithError:gILCannedError];
+	if (error) {
+		[client URLProtocol:self didFailWithError:error];
 		
 	} else {
 		
@@ -183,7 +258,7 @@ static CGFloat gILResponseDelay = 0;
 											 headerFields:headers 
 											  requestTime:0.0];
 		
-		[NSThread sleepForTimeInterval:gILResponseDelay];
+		[NSThread sleepForTimeInterval:responseDelay];
 		//NSDate *loopUntil = [NSDate dateWithTimeIntervalSinceNow:gILResponseDelay];
 		//[[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate:loopUntil];
 		
